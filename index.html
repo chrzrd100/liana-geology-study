@@ -235,7 +235,7 @@ function cards(key){
       <div class="row between"><span class="pill">${esc(q.domain&&DOMAINS.find(d=>d.key===q.domain).name||title)}</span><span class="small muted">${i+1} / ${order.length}</span></div>
       <div class="card tap" id="cardflip" style="margin-top:12px;min-height:180px">
         <div class="q">${esc(q.q)}</div>
-        ${flip?`<div class="explain" style="font-size:15px"><b>${String.fromCharCode(65+q.answer)}. ${esc(q.choices[q.answer])}</b><br>${esc(q.explain)}</div>`
+        ${flip?`<div class="explain" style="font-size:15px"><b>Answer: ${String.fromCharCode(65+q.answer)}. ${esc(q.choices[q.answer])}</b><br>${esc(q.explain)}</div>`
           :`<div class="fc-list">${q.choices.map((c,ix)=>String.fromCharCode(65+ix)+'. '+esc(c)).join('<br>')}<div class="hint">Tap to reveal answer</div></div>`}
       </div>
       <div class="row" style="gap:10px;margin-top:6px">
@@ -269,7 +269,9 @@ function run(n){
   function fmt(){const m=String(left/60|0).padStart(2,'0'),s=String(left%60).padStart(2,'0');return m+':'+s;}
   function draw(){
     screen.innerHTML=`<div class="row between" style="position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:2">
-        <span class="small muted">${n} questions</span><span class="timer ${left<60?'low':''}" id="tm">⏱ ${fmt()}</span></div>
+        <button class="back" id="exit" style="margin:0">‹ Exit</button>
+        <span class="timer ${left<60?'low':''}" id="tm">⏱ ${fmt()}</span></div>
+      <div class="small muted" style="margin:-2px 0 8px">${n} questions</div>
       ${set.map((q,qi)=>`<div class="card">
         <span class="pill">${qi+1}. ${esc(DOMAINS.find(d=>d.key===q.domain).name)}</span>
         <div class="q">${esc(q.q)}</div>
@@ -278,6 +280,8 @@ function run(n){
       <button class="btn" id="sub">Submit exam</button>`;
     screen.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{picks[+b.dataset.q]=+b.dataset.ix;draw();});
     screen.querySelector('#sub').onclick=submit;
+    screen.querySelector('#exit').onclick=()=>{
+      if(confirm('Exit the exam? Your answers will not be scored.')){clearInterval(tid);mock();}};
   }
   function submit(){
     clearInterval(tid);let score=0;const bt={};
