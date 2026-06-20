@@ -8,9 +8,9 @@
   /* Monarch-inspired: warm cream canvas, forest-green accent, soft white cards,
      generous spacing, rounded corners, mobile-app feel with a bottom tab bar. */
   :root{
-    --bg:#F4F1EA; --card:#FFFFFF; --ink:#1C2B26; --muted:#6B7B74;
-    --green:#1F5C45; --green-soft:#E6EFE9; --line:#E7E2D7;
-    --good:#2E8B6B; --warn:#E0A53B; --bad:#D26A5C; --accent:#1F5C45;
+    --bg:#F4F1E8; --card:#FFFFFF; --ink:#23271C; --muted:#73786A;
+    --green:#6E7A3C; --green-soft:#EDEFDB; --line:#E6E2D4;
+    --good:#6E7A3C; --warn:#C79A3C; --bad:#C26A52; --accent:#6E7A3C;
     --shadow:0 1px 2px rgba(28,43,38,.05),0 6px 18px rgba(28,43,38,.06);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -18,8 +18,9 @@
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
     background:var(--bg);color:var(--ink);line-height:1.5;
     -webkit-font-smoothing:antialiased}
-  .app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-  .screen{flex:1;padding:20px 18px 96px;animation:fade .25s ease}
+  .app{max-width:900px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+  .screen{flex:1;width:100%;max-width:900px;margin:0 auto;padding:22px 18px 100px;animation:fade .25s ease}
+  .screen.narrow{max-width:640px}            /* reading content (quiz/cards/mock) stays centered */
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
   h1{font-size:24px;margin:2px 0 2px;letter-spacing:-.4px}
   h2{font-size:18px;margin:22px 0 10px;letter-spacing:-.3px}
@@ -41,7 +42,9 @@
   .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
   .btn.sm{width:auto;padding:10px 16px;font-size:14px}
   .btn:disabled{opacity:.4}
-  .grid{display:flex;flex-direction:column;gap:12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px}
+  .fc-list{font-size:16px;line-height:1.85;color:var(--ink)}  /* flashcard choices, bigger */
+  .fc-list .hint{margin-top:12px;color:var(--green);font-weight:600;font-size:14px}
   .ring{--p:0;width:96px;height:96px;border-radius:50%;flex:none;
     background:conic-gradient(var(--green) calc(var(--p)*1%), #EAE5DA 0);
     display:grid;place-items:center}
@@ -56,7 +59,7 @@
   .choice.wrong{background:#FbECEA;border-color:var(--bad);color:#8e362b}
   .explain{background:var(--green-soft);border-radius:14px;padding:13px 15px;font-size:14px;margin-top:6px}
   .q{font-size:18px;font-weight:600;margin:10px 0 16px;letter-spacing:-.2px}
-  .tabbar{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
+  .tabbar{position:fixed;bottom:0;left:0;right:0;max-width:900px;margin:0 auto;
     background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);
     display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
   .tabbar button{background:none;border:none;font:inherit;color:var(--muted);font-size:11px;
@@ -106,7 +109,7 @@
 <script src="geology_questions.js"></script>
 <script>
 // ---------- password gate (cosmetic; repo is public) ----------
-const PW_HASH="2a5eadf29b2fb00c0077a474c780c610ebcec415a3462c04c38313e6d3e47cce"; // sha256("lianageo")
+const PW_HASH="66f36be4778ab6d428618ca07365abafbaa33119d94250bb1d4495bef937c562"; // sha256("bwagh")
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));
   return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 function openApp(){document.getElementById('lock').style.display='none';
@@ -141,6 +144,7 @@ function render(){({home:home,cards:()=>cards(null),mock:mock})[tab]();}
 
 // ---------- HOME / dashboard ----------
 function home(){
+  screen.classList.remove('narrow');
   const ov=overall();
   screen.innerHTML=`
     <p class="sub">Fundamentals of Geology</p>
@@ -168,6 +172,7 @@ function home(){
 
 // ---------- DOMAIN DETAIL ----------
 function domain(key){
+  screen.classList.add('narrow');
   const d=DOMAINS.find(x=>x.key===key),p=mastery(key),n=byDomain(key).length;
   screen.innerHTML=`
     <button class="back" id="bk">‹ Home</button>
@@ -192,6 +197,7 @@ function domain(key){
 
 // ---------- PRACTICE (per topic) ----------
 function practice(key){
+  screen.classList.add('narrow');
   const order=shuffle(byDomain(key));let i=0,score=0;
   const d=DOMAINS.find(x=>x.key===key);
   function step(){
@@ -220,6 +226,7 @@ function practice(key){
 
 // ---------- FLASHCARDS (all or per topic) ----------
 function cards(key){
+  screen.classList.add('narrow');
   const pool=key?byDomain(key):Q;const order=shuffle(pool);let i=0,flip=false;
   const title=key?DOMAINS.find(x=>x.key===key).name:'All topics';
   function show(){
@@ -228,8 +235,8 @@ function cards(key){
       <div class="row between"><span class="pill">${esc(q.domain&&DOMAINS.find(d=>d.key===q.domain).name||title)}</span><span class="small muted">${i+1} / ${order.length}</span></div>
       <div class="card tap" id="cardflip" style="margin-top:12px;min-height:180px">
         <div class="q">${esc(q.q)}</div>
-        ${flip?`<div class="explain"><b>${esc(q.choices[q.answer])}</b><br>${esc(q.explain)}</div>`
-          :`<div class="small muted">${q.choices.map((c,ix)=>String.fromCharCode(65+ix)+'. '+esc(c)).join('<br>')}<div style="margin-top:10px;color:var(--green);font-weight:600">Tap to reveal answer</div></div>`}
+        ${flip?`<div class="explain" style="font-size:15px"><b>${String.fromCharCode(65+q.answer)}. ${esc(q.choices[q.answer])}</b><br>${esc(q.explain)}</div>`
+          :`<div class="fc-list">${q.choices.map((c,ix)=>String.fromCharCode(65+ix)+'. '+esc(c)).join('<br>')}<div class="hint">Tap to reveal answer</div></div>`}
       </div>
       <div class="row" style="gap:10px;margin-top:6px">
         <button class="btn ghost sm" id="prev" style="flex:1" ${i===0?'disabled':''}>‹ Prev</button>
@@ -244,6 +251,7 @@ function cards(key){
 
 // ---------- MOCK EXAM (weighted across all domains, timed) ----------
 function mock(){
+  screen.classList.add('narrow');
   const max=Q.length;
   screen.innerHTML=`<p class="sub">Timed exam</p><h1>Mock Exam</h1>
     <div class="card">
