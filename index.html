@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Liana · ASBOG FG Study</title>
+<style>
+  /* Monarch-inspired: warm cream canvas, forest-green accent, soft white cards,
+     generous spacing, rounded corners, mobile-app feel with a bottom tab bar. */
+  :root{
+    --bg:#F4F1EA; --card:#FFFFFF; --ink:#1C2B26; --muted:#6B7B74;
+    --green:#1F5C45; --green-soft:#E6EFE9; --line:#E7E2D7;
+    --good:#2E8B6B; --warn:#E0A53B; --bad:#D26A5C; --accent:#1F5C45;
+    --shadow:0 1px 2px rgba(28,43,38,.05),0 6px 18px rgba(28,43,38,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+  .screen{flex:1;padding:20px 18px 96px;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  h1{font-size:24px;margin:2px 0 2px;letter-spacing:-.4px}
+  h2{font-size:18px;margin:22px 0 10px;letter-spacing:-.3px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+  .tap{cursor:pointer;transition:transform .08s ease}
+  .tap:active{transform:scale(.985)}
+  .row{display:flex;align-items:center;gap:12px}
+  .between{justify-content:space-between}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  .pill{font-size:12px;color:var(--green);background:var(--green-soft);
+    padding:3px 10px;border-radius:999px;font-weight:600;display:inline-block}
+  .bar{height:8px;border-radius:99px;background:#EFEBE1;overflow:hidden;flex:1}
+  .bar>span{display:block;height:100%;border-radius:99px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    padding:14px;border-radius:14px;border:none;font:inherit;font-weight:600;font-size:15px;
+    cursor:pointer;background:var(--green);color:#fff}
+  .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .btn.sm{width:auto;padding:10px 16px;font-size:14px}
+  .btn:disabled{opacity:.4}
+  .grid{display:flex;flex-direction:column;gap:12px}
+  .ring{--p:0;width:96px;height:96px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--green) calc(var(--p)*1%), #EAE5DA 0);
+    display:grid;place-items:center}
+  .ring .inner{width:74px;height:74px;border-radius:50%;background:var(--card);
+    display:grid;place-items:center;text-align:center}
+  .ring b{font-size:22px;line-height:1} .ring small{font-size:10px;color:var(--muted)}
+  .choice{display:block;width:100%;text-align:left;padding:14px;border-radius:14px;
+    border:1px solid var(--line);background:var(--card);font:inherit;font-size:15px;
+    margin-bottom:10px;cursor:pointer;font-weight:500}
+  .choice:active{transform:scale(.99)}
+  .choice.correct{background:#E7F3ED;border-color:var(--good);color:#155c41}
+  .choice.wrong{background:#FbECEA;border-color:var(--bad);color:#8e362b}
+  .explain{background:var(--green-soft);border-radius:14px;padding:13px 15px;font-size:14px;margin-top:6px}
+  .q{font-size:18px;font-weight:600;margin:10px 0 16px;letter-spacing:-.2px}
+  .tabbar{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+  .tabbar button{background:none;border:none;font:inherit;color:var(--muted);font-size:11px;
+    font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 12px}
+  .tabbar button.active{color:var(--green)}
+  .tabbar .ic{font-size:19px}
+  .back{background:none;border:none;color:var(--green);font:inherit;font-weight:600;
+    cursor:pointer;padding:0;margin-bottom:8px;font-size:15px}
+  a{color:var(--green);text-decoration:none;font-weight:600}
+  .res{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .res:last-child{border-bottom:none}
+  .center{text-align:center} .big{font-size:46px;font-weight:800;letter-spacing:-1px}
+  .timer{font-variant-numeric:tabular-nums;font-weight:700}
+  .timer.low{color:var(--bad)}
+  /* lock screen */
+  .lock{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:50;padding:24px}
+  .lock .card{max-width:340px;width:100%;text-align:center}
+  .lock input{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);
+    font:inherit;font-size:16px;margin:14px 0 10px;text-align:center;background:#fff}
+  .lock .err{color:var(--bad);font-size:13px;min-height:18px}
+  .logo{width:54px;height:54px;border-radius:16px;background:var(--green);color:#fff;
+    display:grid;place-items:center;margin:0 auto 12px;font-size:26px}
+</style>
+</head>
+<body>
+<!-- password gate -->
+<div class="lock" id="lock">
+  <div class="card">
+    <div class="logo">⛰️</div>
+    <h1 style="margin:0">Liana's Geology Prep</h1>
+    <p class="sub">Enter your password to continue</p>
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password" autofocus>
+    <div class="err" id="pwerr"></div>
+    <button class="btn" id="unlock">Unlock</button>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="screen" id="screen"></div>
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="home" class="active"><span class="ic">🏠</span>Home</button>
+    <button data-tab="cards"><span class="ic">🃏</span>Flashcards</button>
+    <button data-tab="mock"><span class="ic">📝</span>Mock</button>
+  </nav>
+</div>
+
+<script src="geology_questions.js"></script>
+<script>
+// ---------- password gate (cosmetic; repo is public) ----------
+const PW_HASH="2a5eadf29b2fb00c0077a474c780c610ebcec415a3462c04c38313e6d3e47cce"; // sha256("lianageo")
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function openApp(){document.getElementById('lock').style.display='none';
+  document.getElementById('app').style.display='flex';render();}
+async function tryUnlock(){const v=document.getElementById('pw').value;
+  if(await sha(v)===PW_HASH){sessionStorage.setItem('geo_ok','1');openApp();}
+  else{document.getElementById('pwerr').textContent='Incorrect password';}}
+document.getElementById('unlock').onclick=tryUnlock;
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
+if(sessionStorage.getItem('geo_ok')==='1')openApp();
+
+// ---------- data ----------
+const Q=window.GEO_QUESTIONS||[], DOMAINS=window.GEO_DOMAINS||[];
+const byDomain=k=>Q.filter(q=>q.domain===k);
+const KEY='liana_geo_v2';
+const stats=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}};
+const save=s=>localStorage.setItem(KEY,JSON.stringify(s));
+function record(dom,ok){const s=stats();s[dom]=s[dom]||{c:0,t:0};s[dom].t++;if(ok)s[dom].c++;save(s);}
+function mastery(dom){const s=stats()[dom];return s&&s.t?Math.round(s.c/s.t*100):null;}
+const overall=()=>{const s=stats();let c=0,t=0;for(const k in s){c+=s[k].c;t+=s[k].t;}return t?Math.round(c/t*100):0;};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const color=p=>p==null?'#CFC9BC':p>=80?'var(--good)':p>=60?'var(--warn)':'var(--bad)';
+const label=p=>p==null?'Not started':p>=80?'Strong':p>=60?'Getting there':'Needs work';
+
+// ---------- routing ----------
+let tab='home';
+const screen=document.getElementById('screen');
+document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;
+  document.querySelectorAll('.tabbar button').forEach(x=>x.classList.toggle('active',x===b));render();});
+function render(){({home:home,cards:()=>cards(null),mock:mock})[tab]();}
+
+// ---------- HOME / dashboard ----------
+function home(){
+  const ov=overall();
+  screen.innerHTML=`
+    <p class="sub">Fundamentals of Geology</p>
+    <h1>Hi Liana 👋</h1>
+    <div class="card row between" style="margin-top:14px">
+      <div><div class="small muted">Overall mastery</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-.5px">${ov}%</div>
+        <div class="small muted">${Q.length} questions · ${DOMAINS.length} topics</div></div>
+      <div class="ring" style="--p:${ov}"><div class="inner"><div><b>${ov}%</b><small>done</small></div></div></div>
+    </div>
+    <h2>Topics</h2>
+    <p class="sub" style="margin:-4px 0 12px">Tap a topic to read resources or drill it.</p>
+    <div class="grid">${DOMAINS.map(d=>{const p=mastery(d.key);return `
+      <div class="card tap" data-dom="${d.key}">
+        <div class="row between"><b style="font-size:15.5px">${esc(d.name)}</b>
+          <span class="small" style="color:${color(p)};font-weight:700">${p==null?'—':p+'%'}</span></div>
+        <div class="small muted" style="margin:4px 0 10px">${esc(d.blurb)}</div>
+        <div class="row"><span class="bar"><span style="width:${p||0}%;background:${color(p)}"></span></span>
+          <span class="small muted" style="width:90px;text-align:right">${label(p)}</span></div>
+      </div>`;}).join('')}</div>
+    <button class="btn ghost" style="margin-top:6px" id="resetbtn">Reset all progress</button>`;
+  screen.querySelectorAll('[data-dom]').forEach(c=>c.onclick=()=>domain(c.dataset.dom));
+  screen.querySelector('#resetbtn').onclick=()=>{if(confirm('Clear all saved progress?')){localStorage.removeItem(KEY);render();}};
+}
+
+// ---------- DOMAIN DETAIL ----------
+function domain(key){
+  const d=DOMAINS.find(x=>x.key===key),p=mastery(key),n=byDomain(key).length;
+  screen.innerHTML=`
+    <button class="back" id="bk">‹ Home</button>
+    <h1>${esc(d.name)}</h1>
+    <p class="sub">${esc(d.blurb)}</p>
+    <div class="card" style="margin-top:14px">
+      <div class="row between"><span class="small muted">Your mastery</span>
+        <span class="pill" style="color:${color(p)};background:transparent">${label(p)}</span></div>
+      <div class="row" style="margin-top:8px"><span class="bar"><span style="width:${p||0}%;background:${color(p)}"></span></span>
+        <span class="small" style="width:54px;text-align:right;font-weight:700">${p==null?'—':p+'%'}</span></div>
+      <div class="small muted" style="margin-top:8px">${n} questions in this topic</div>
+    </div>
+    <button class="btn" id="quiz">Practice this topic</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="flash">Flashcards</button>
+    <h2>Resources</h2>
+    <div class="card">${(d.resources||[]).map(r=>`<div class="res">📖 <a href="${r[1]}" target="_blank" rel="noopener">${esc(r[0])}</a></div>`).join('')||'<div class="small muted">Resources coming soon.</div>'}</div>`;
+  screen.querySelector('#bk').onclick=home;
+  screen.querySelector('#quiz').onclick=()=>practice(key);
+  screen.querySelector('#flash').onclick=()=>cards(key);
+}
+
+// ---------- PRACTICE (per topic) ----------
+function practice(key){
+  const order=shuffle(byDomain(key));let i=0,score=0;
+  const d=DOMAINS.find(x=>x.key===key);
+  function step(){
+    if(i>=order.length){screen.innerHTML=`<button class="back" id="bk">‹ ${esc(d.name)}</button>
+      <div class="card center" style="margin-top:40px"><div class="big" style="color:var(--green)">${score}/${order.length}</div>
+      <p class="muted">Nice work. Saved to your progress.</p>
+      <button class="btn" id="again" style="margin-top:10px">Practice again</button></div>`;
+      screen.querySelector('#bk').onclick=()=>domain(key);screen.querySelector('#again').onclick=()=>practice(key);return;}
+    const q=order[i];
+    screen.innerHTML=`<button class="back" id="bk">‹ Exit</button>
+      <div class="row between"><span class="pill">${esc(d.name)}</span><span class="small muted">${i+1} / ${order.length}</span></div>
+      <div class="q">${esc(q.q)}</div><div id="ch">${q.choices.map((c,ix)=>`<button class="choice" data-ix="${ix}">${esc(c)}</button>`).join('')}</div><div id="fb"></div>`;
+    screen.querySelector('#bk').onclick=()=>domain(key);
+    screen.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pick(q,+b.dataset.ix));
+  }
+  function pick(q,ix){
+    screen.querySelectorAll('.choice').forEach((b,bi)=>{b.onclick=null;
+      if(bi===q.answer)b.classList.add('correct');if(bi===ix&&ix!==q.answer)b.classList.add('wrong');});
+    const ok=ix===q.answer;if(ok)score++;record(q.domain,ok);
+    screen.querySelector('#fb').innerHTML=`<div class="explain"><b>${ok?'✓ Correct':'✗ Not quite'}.</b> ${esc(q.explain)}</div>
+      <div style="height:12px"></div><button class="btn" id="nx">${i+1<order.length?'Next':'Finish'}</button>`;
+    screen.querySelector('#nx').onclick=()=>{i++;step();};
+  }
+  step();
+}
+
+// ---------- FLASHCARDS (all or per topic) ----------
+function cards(key){
+  const pool=key?byDomain(key):Q;const order=shuffle(pool);let i=0,flip=false;
+  const title=key?DOMAINS.find(x=>x.key===key).name:'All topics';
+  function show(){
+    const q=order[i];
+    screen.innerHTML=`${key?`<button class="back" id="bk">‹ Back</button>`:`<p class="sub">Flashcards</p><h1>All topics</h1>`}
+      <div class="row between"><span class="pill">${esc(q.domain&&DOMAINS.find(d=>d.key===q.domain).name||title)}</span><span class="small muted">${i+1} / ${order.length}</span></div>
+      <div class="card tap" id="cardflip" style="margin-top:12px;min-height:180px">
+        <div class="q">${esc(q.q)}</div>
+        ${flip?`<div class="explain"><b>${esc(q.choices[q.answer])}</b><br>${esc(q.explain)}</div>`
+          :`<div class="small muted">${q.choices.map((c,ix)=>String.fromCharCode(65+ix)+'. '+esc(c)).join('<br>')}<div style="margin-top:10px;color:var(--green);font-weight:600">Tap to reveal answer</div></div>`}
+      </div>
+      <div class="row" style="gap:10px;margin-top:6px">
+        <button class="btn ghost sm" id="prev" style="flex:1" ${i===0?'disabled':''}>‹ Prev</button>
+        <button class="btn sm" id="next" style="flex:1" ${i+1>=order.length?'disabled':''}>Next ›</button></div>`;
+    if(key)screen.querySelector('#bk').onclick=()=>domain(key);
+    screen.querySelector('#cardflip').onclick=()=>{flip=!flip;show();};
+    screen.querySelector('#prev').onclick=()=>{if(i>0){i--;flip=false;show();}};
+    screen.querySelector('#next').onclick=()=>{if(i+1<order.length){i++;flip=false;show();}};
+  }
+  show();
+}
+
+// ---------- MOCK EXAM (weighted across all domains, timed) ----------
+function mock(){
+  const max=Q.length;
+  screen.innerHTML=`<p class="sub">Timed exam</p><h1>Mock Exam</h1>
+    <div class="card">
+      <div class="row between"><span class="small muted">Questions</span>
+        <select id="mc" style="font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#fff">
+          <option value="20">20</option><option value="40">40</option><option value="${max}">All (${max})</option></select></div>
+      <div class="row between" style="margin-top:10px"><span class="small muted">Time</span><span class="small">~2 min / question</span></div>
+      <div class="small muted" style="margin-top:10px">Mirrors the real FG: mixed topics, no feedback until you submit, then a full score breakdown.</div>
+    </div>
+    <button class="btn" id="start">Start exam</button>`;
+  screen.querySelector('#start').onclick=()=>run(+screen.querySelector('#mc').value);
+}
+function run(n){
+  const set=shuffle(Q).slice(0,n),picks=Array(n).fill(null);let left=n*120,tid=null;
+  function fmt(){const m=String(left/60|0).padStart(2,'0'),s=String(left%60).padStart(2,'0');return m+':'+s;}
+  function draw(){
+    screen.innerHTML=`<div class="row between" style="position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:2">
+        <span class="small muted">${n} questions</span><span class="timer ${left<60?'low':''}" id="tm">⏱ ${fmt()}</span></div>
+      ${set.map((q,qi)=>`<div class="card">
+        <span class="pill">${qi+1}. ${esc(DOMAINS.find(d=>d.key===q.domain).name)}</span>
+        <div class="q">${esc(q.q)}</div>
+        ${q.choices.map((c,ix)=>`<button class="choice ${picks[qi]===ix?'correct':''}" data-q="${qi}" data-ix="${ix}">${esc(c)}</button>`).join('')}
+        </div>`).join('')}
+      <button class="btn" id="sub">Submit exam</button>`;
+    screen.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{picks[+b.dataset.q]=+b.dataset.ix;draw();});
+    screen.querySelector('#sub').onclick=submit;
+  }
+  function submit(){
+    clearInterval(tid);let score=0;const bt={};
+    set.forEach((q,qi)=>{const ok=picks[qi]===q.answer;if(ok)score++;record(q.domain,ok);
+      bt[q.domain]=bt[q.domain]||{c:0,t:0};bt[q.domain].t++;if(ok)bt[q.domain].c++;});
+    const pct=Math.round(score/n*100),missed=set.map((q,qi)=>({q,qi})).filter(({q,qi})=>picks[qi]!==q.answer);
+    screen.innerHTML=`<div class="card center"><div class="big" style="color:${pct>=70?'var(--good)':'var(--bad)'}">${pct}%</div>
+        <p class="muted">${score} of ${n} correct${pct>=70?' · passing range':''}</p></div>
+      <h2>By topic</h2>${Object.entries(bt).sort((a,b)=>a[1].c/a[1].t-b[1].c/b[1].t).map(([k,o])=>{const p=Math.round(o.c/o.t*100);
+        return `<div class="card" style="padding:12px"><div class="row between"><span class="small">${esc(DOMAINS.find(d=>d.key===k).name)}</span>
+          <span class="small" style="font-weight:700;color:${color(p)}">${o.c}/${o.t}</span></div>
+          <div class="bar" style="margin-top:6px"><span style="width:${p}%;background:${color(p)}"></span></div></div>`;}).join('')}
+      <h2>Review missed (${missed.length})</h2>${missed.length?missed.map(({q,qi})=>`<div class="card">
+        <div style="font-weight:600;font-size:14.5px">${esc(q.q)}</div>
+        <div class="small muted" style="margin:6px 0">Your answer: ${picks[qi]==null?'(blank)':esc(q.choices[picks[qi]])}</div>
+        <div class="explain"><b>${esc(q.choices[q.answer])}</b> — ${esc(q.explain)}</div></div>`).join(''):'<div class="card small muted">Clean sweep — nothing missed!</div>'}
+      <button class="btn ghost" id="done">Back to Mock</button>`;
+    screen.querySelector('#done').onclick=mock;
+  }
+  draw();tid=setInterval(()=>{left--;const t=screen.querySelector('#tm');if(t){t.textContent='⏱ '+fmt();t.classList.toggle('low',left<60);}if(left<=0)submit();},1000);
+}
+</script>
+</body>
+</html>
